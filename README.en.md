@@ -65,7 +65,7 @@ dsh --profile headless "dub ./demo.mp4 into English"
 | `source` | string | ✅ | Local file path (`./talk.mp4`) or a direct link to a media file. Page URLs (YouTube, Bilibili, social posts) are **not** media files and are rejected |
 | `target_lang` | string | ✅ | Language to dub into — see the table below |
 | `source_lang` | string | | Spoken language of the source. Default `auto` |
-| `reduce_accent` | boolean | | More native-sounding target pronunciation, at a small cost to voice similarity. Defaults on for non-English targets |
+| `reduce_accent` | boolean | | More native-sounding target pronunciation, at a small cost to voice similarity. Leave unset for the service default |
 | `wait` | boolean | | Wait for the result. Default `true` |
 | `wait_seconds` | integer | | Wait budget; default 600, max 1800. Rule of thumb: allow 1–2× the media duration |
 
@@ -136,6 +136,10 @@ The difference: MCP exposes the full API surface (uploads, subtitles, balance, j
 npm install
 npm run check   # typecheck + test + build
 ```
+
+## Documentation
+
+Full parameter reference, language support and API details: [startpinch.com/docs](https://startpinch.com/docs)
 
 ## License
 

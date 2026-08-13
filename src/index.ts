@@ -219,7 +219,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         type: 'boolean',
         description:
           'Make the dubbed speech sound more native in the target language, at a slight cost to voice similarity. ' +
-          'Default true for non-English targets.',
+          'Leave unset to use the service default.',
       },
       wait: {
         type: 'boolean',

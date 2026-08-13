@@ -65,7 +65,7 @@ dsh --profile headless "把 ./demo.mp4 配音成英文"
 | `source` | string | ✅ | 本地文件路径（`./talk.mp4`）或媒体文件直链。**不支持** YouTube / B 站等网页链接，那是页面不是媒体文件 |
 | `target_lang` | string | ✅ | 目标语言，见下表 |
 | `source_lang` | string | | 源语言，默认 `auto`（自动识别） |
-| `reduce_accent` | boolean | | 让配音更接近目标语言母语发音，代价是音色相似度略降。非英语目标默认开启 |
+| `reduce_accent` | boolean | | 让配音更接近目标语言母语发音，代价是音色相似度略降。不填则使用服务端默认值 |
 | `wait` | boolean | | 是否等待完成，默认 `true` |
 | `wait_seconds` | integer | | 等待预算，默认 600，最大 1800。经验值：留 1–2 倍素材时长 |
 
@@ -136,6 +136,10 @@ dsh --profile headless "把 ./demo.mp4 配音成英文"
 npm install
 npm run check   # typecheck + test + build
 ```
+
+## 文档
+
+完整的参数说明、语言支持和 API 细节见 [startpinch.com/docs](https://startpinch.com/docs)。
 
 ## 许可证
 
