@@ -27,7 +27,7 @@ import {
   TARGET_LANGUAGES,
   DEFAULT_BASE_URL,
 } from './api.ts'
-import type { ClientOptions, JobStatus } from './api.ts'
+import type { ClientOptions, JobStatus, Json, JsonRecord } from './api.ts'
 import { isHttpUrl, uploadLocalFile } from './upload.ts'
 
 export const name = 'dsh-audio-dub'
@@ -50,14 +50,6 @@ const MAX_WAIT_SECONDS = 1800
 const TOOL_TIMEOUT_MS = (MAX_WAIT_SECONDS + 60) * 1000
 
 const PRICE_PER_MINUTE_USD = 0.5
-
-/**
- * Structurally identical to the harness's own `JsonValue`. Declared locally so
- * this plugin doesn't take a peer dependency on the session package just for a
- * type — tool results must round-trip losslessly through the session log.
- */
-type Json = null | boolean | number | string | Json[] | { [key: string]: Json }
-type JsonRecord = { [key: string]: Json }
 
 /** Drop undefined values — undefined is not JSON. */
 function clean(obj: Record<string, Json | undefined>): JsonRecord {
@@ -118,6 +110,25 @@ function jobSummary(job: JobStatus, extra?: JsonRecord): JsonRecord {
   })
 }
 
+/**
+ * `progress` is a free-form JSON column: a `{stage, stage_name}` object today,
+ * a percentage in older jobs. Interpolating it blindly printed
+ * "[object Object]%" into the model's context, so every shape is handled here.
+ */
+export function formatProgress(progress: Json | undefined): string {
+  if (progress == null) return ''
+  if (typeof progress === 'number') return ` (${progress}%)`
+  if (typeof progress === 'object' && !Array.isArray(progress)) {
+    const stage = progress.stage
+    const stageName = progress.stage_name
+    if (typeof stageName === 'string' && stageName) {
+      return typeof stage === 'number' ? ` (stage ${stage} — ${stageName})` : ` (${stageName})`
+    }
+    if (typeof stage === 'number') return ` (stage ${stage})`
+  }
+  return ''
+}
+
 /** Human-facing one-liner for the transcript. */
 function renderSummary(value: JsonRecord): string {
   if (value.ok === false) {
@@ -125,7 +136,7 @@ function renderSummary(value: JsonRecord): string {
   }
   const lines: string[] = []
   const status = String(value.status ?? 'unknown')
-  lines.push(`Job ${value.job_id} — ${status}${value.progress != null ? ` (${value.progress}%)` : ''}`)
+  lines.push(`Job ${value.job_id} — ${status}${formatProgress(value.progress)}`)
   if (value.source_lang && value.target_lang) lines.push(`${value.source_lang} → ${value.target_lang}`)
   if (value.duration_sec != null) lines.push(`duration ${Math.round(Number(value.duration_sec))}s`)
   if (value.cost_usd != null) lines.push(`cost $${Number(value.cost_usd).toFixed(2)}`)

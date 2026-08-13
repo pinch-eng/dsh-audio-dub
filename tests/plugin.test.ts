@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Context } from '@deepseek-ai/cordis'
-import { apply, inject, name } from '../src/index.ts'
+import { apply, formatProgress, inject, name } from '../src/index.ts'
 
 /** Minimal stand-in for the harness: capture whatever the plugin registers. */
 function fakeContext(): { ctx: Context; tools: Map<string, any> } {
@@ -140,5 +140,50 @@ describe('dub_status', () => {
     const text = tool.output.render({}, value)[0].text
     expect(text).toContain('cost $1.25')
     expect(text).toContain('https://s3.test/fresh')
+  })
+})
+
+describe('progress formatting', () => {
+  // The live API returns {stage, stage_name}; interpolating it printed
+  // "[object Object]%" into the model's context.
+  it('renders a stage object, never [object Object]', () => {
+    expect(formatProgress({ stage: 7, stage_name: 'Align & Stitch' })).toBe(' (stage 7 — Align & Stitch)')
+    expect(formatProgress({ stage_name: 'Transcribing' })).toBe(' (Transcribing)')
+    expect(formatProgress({ stage: 3 })).toBe(' (stage 3)')
+  })
+
+  it('still renders a bare percentage', () => {
+    expect(formatProgress(42)).toBe(' (42%)')
+  })
+
+  it('renders nothing for missing or unrecognised shapes', () => {
+    expect(formatProgress(undefined)).toBe('')
+    expect(formatProgress(null)).toBe('')
+    expect(formatProgress({})).toBe('')
+    expect(formatProgress(['weird'])).toBe('')
+    expect(formatProgress('running')).toBe('')
+  })
+
+  it('keeps [object Object] out of a rendered job summary', async () => {
+    process.env.PINCH_API_KEY = 'pk_test'
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        job_id: 'job-1', status: 'processing', source_lang: 'en', target_lang: 'zh',
+        progress: { stage: 7, stage_name: 'Align & Stitch' },
+      }),
+    })))
+
+    const { ctx, tools } = fakeContext()
+    apply(ctx)
+    const tool = tools.get('dub_status')
+    const value = await tool.execute({ job_id: 'job-1' }, exec)
+    const text = tool.output.render({}, value)[0].text
+
+    expect(text).not.toContain('[object Object]')
+    expect(text).toContain('stage 7 — Align & Stitch')
+    // The raw object still reaches the model in the structured result.
+    expect(value.progress).toEqual({ stage: 7, stage_name: 'Align & Stitch' })
   })
 })

@@ -28,12 +28,26 @@ export const LANGUAGE_NAMES: Record<TargetLanguage, { en: string; zh: string }> 
 /** Statuses from which a job will never move again. */
 export const TERMINAL_STATUSES = ['completed', 'failed'] as const
 
+/**
+ * Structurally identical to the harness's own `JsonValue`. Declared here so the
+ * plugin doesn't take a peer dependency on the session package just for a type —
+ * everything a tool returns must round-trip losslessly through the session log.
+ */
+export type Json = null | boolean | number | string | Json[] | { [key: string]: Json }
+export type JsonRecord = { [key: string]: Json }
+
 export interface JobStatus {
   job_id: string
   status: string
   source_lang: string
   target_lang: string
-  progress?: number | null
+  /**
+   * Pipeline position, e.g. `{ stage: 7, stage_name: 'Align & Stitch' }`. Shape
+   * varies — a stage object today, a percentage on older jobs — and it's a
+   * free-form JSON column server-side, so it's carried through as plain JSON
+   * and only formatted defensively for display.
+   */
+  progress?: Json
   input_duration_sec?: number | null
   cost_usd?: number | null
   output_url?: string | null
