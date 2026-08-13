@@ -1,0 +1,8 @@
+# dsh bundle patch: inserts this plugin into a profile's layer stack.
+- insert:
+    - id: audio-dub
+      name: 'dsh-audio-dub'
+      config:
+        # apiKey defaults to process.env.PINCH_API_KEY — set it there instead of
+        # writing a key into this file.
+        pollIntervalMs: 15000
