@@ -22,21 +22,30 @@ Agent 已经能处理文本翻译，但"把这个视频做成英文版"一直落
 
 ## 安装
 
+装到你的 profile（以 `headless` 为例，`web` / `tui` 同理）：
+
 ```bash
-npm install dsh-audio-dub
+dsh plugin --profile headless add github:pinch-eng/dsh-audio-dub
 ```
 
-在 `cordis.yml` 中追加：
+插件自带 `cordis.patch.yml`，安装后会自动插入 profile 的插件栈，**无需手动编辑 `cordis.yml`**。可以这样确认：
 
-```yaml
-- id: audio-dub
-  name: 'dsh-audio-dub'
+```bash
+dsh --profile headless --dump-config | grep -A 3 audio-dub
 ```
+
+> pnpm 可能提示 `missing peer @deepseek-ai/cordis / dsh-tools`。这是预期的：两者由 harness 本体提供，插件刻意不自带副本——同一个包装两份会让工具注册表拿到两个不同的服务实例。
 
 然后设置 API key（在 [portal.startpinch.com](https://portal.startpinch.com/dashboard/api-keys) 创建，形如 `pk_…`）：
 
 ```bash
 export PINCH_API_KEY=pk_xxx
+```
+
+试一下：
+
+```bash
+dsh --profile headless "把 ./demo.mp4 配音成英文"
 ```
 
 ## 配置

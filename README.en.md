@@ -22,21 +22,30 @@ This plugin collapses that into one tool call: **give it a local path or a direc
 
 ## Install
 
+Install into your profile (`headless` here; `web` / `tui` work the same way):
+
 ```bash
-npm install dsh-audio-dub
+dsh plugin --profile headless add github:pinch-eng/dsh-audio-dub
 ```
 
-Add to `cordis.yml`:
+The plugin ships a `cordis.patch.yml`, so it inserts itself into the profile's plugin stack on install — **no manual `cordis.yml` edit needed**. Confirm with:
 
-```yaml
-- id: audio-dub
-  name: 'dsh-audio-dub'
+```bash
+dsh --profile headless --dump-config | grep -A 3 audio-dub
 ```
+
+> pnpm may warn about `missing peer @deepseek-ai/cordis / dsh-tools`. That's expected: both are provided by the harness itself, and this plugin deliberately doesn't bundle its own copies — two copies of the tools package would hand the registry two different service instances.
 
 Then set an API key (create one at [portal.startpinch.com](https://portal.startpinch.com/dashboard/api-keys); it looks like `pk_…`):
 
 ```bash
 export PINCH_API_KEY=pk_xxx
+```
+
+Try it:
+
+```bash
+dsh --profile headless "dub ./demo.mp4 into English"
 ```
 
 ## Config
