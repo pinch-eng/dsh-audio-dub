@@ -28,15 +28,7 @@ Agent 已经能处理文本翻译，但"把这个视频做成英文版"一直落
 dsh plugin --profile headless add github:pinch-eng/dsh-audio-dub
 ```
 
-插件自带 `cordis.patch.yml`，安装后会自动插入 profile 的插件栈，**无需手动编辑 `cordis.yml`**。可以这样确认：
-
-```bash
-dsh --profile headless --dump-config | grep -A 3 audio-dub
-```
-
-> pnpm 可能提示 `missing peer @deepseek-ai/cordis / dsh-tools`。这是预期的：两者由 harness 本体提供，插件刻意不自带副本——同一个包装两份会让工具注册表拿到两个不同的服务实例。
-
-然后设置 API key（在 [portal.startpinch.com](https://portal.startpinch.com/dashboard/api-keys) 创建，形如 `pk_…`）：
+安装后插件会自动注册，无需手动编辑 `cordis.yml`。然后设置 API key（在 [portal.startpinch.com](https://portal.startpinch.com/dashboard/api-keys) 创建，形如 `pk_…`）：
 
 ```bash
 export PINCH_API_KEY=pk_xxx
@@ -107,11 +99,8 @@ dsh --profile headless "把 ./demo.mp4 配音成英文"
 
 ## 安全模型
 
-- **凭证只出现在请求头**：API key 通过 `Authorization` 发往配置的 `baseUrl`，不会出现在任何工具返回值里。工具参数和返回值都会进入会话日志，请注意不要把 key 写进 prompt
-- **文件访问**：`source` 为本地路径时会读取该文件并上传；除此之外不读写任何文件
-- **网络访问**：仅 `baseUrl` 与其返回的预签名存储地址
-- **无 eval、无子进程**
-- 权限边界：API key 只能用于配音相关接口，**不能**用来创建新的 API key
+- API key 通过 `Authorization` 请求头发往 `baseUrl`，不会出现在任何工具返回值里；但工具参数会进入会话日志，请不要把 key 写进 prompt。该 key 只能访问配音相关接口，**不能**用来创建新的 API key。
+- `source` 为本地路径时读取该文件并上传，除此之外不读写任何文件；网络只访问 `baseUrl` 及其返回的预签名存储地址。
 
 ## 也可以走 MCP
 

@@ -28,15 +28,7 @@ Install into your profile (`headless` here; `web` / `tui` work the same way):
 dsh plugin --profile headless add github:pinch-eng/dsh-audio-dub
 ```
 
-The plugin ships a `cordis.patch.yml`, so it inserts itself into the profile's plugin stack on install — **no manual `cordis.yml` edit needed**. Confirm with:
-
-```bash
-dsh --profile headless --dump-config | grep -A 3 audio-dub
-```
-
-> pnpm may warn about `missing peer @deepseek-ai/cordis / dsh-tools`. That's expected: both are provided by the harness itself, and this plugin deliberately doesn't bundle its own copies — two copies of the tools package would hand the registry two different service instances.
-
-Then set an API key (create one at [portal.startpinch.com](https://portal.startpinch.com/dashboard/api-keys); it looks like `pk_…`):
+It registers itself on install — no `cordis.yml` edit needed. Then set an API key (create one at [portal.startpinch.com](https://portal.startpinch.com/dashboard/api-keys); it looks like `pk_…`):
 
 ```bash
 export PINCH_API_KEY=pk_xxx
@@ -107,11 +99,8 @@ On an empty balance the tool returns `insufficient_balance` together with the to
 
 ## Security model
 
-- **Credentials stay in the header**: the API key is sent as `Authorization` to the configured `baseUrl` and never appears in a tool result. Tool arguments and results are written to the session log — don't paste keys into prompts
-- **File access**: reads the file at `source` when it's a local path, and nothing else
-- **Network access**: only `baseUrl` and the presigned storage target it returns
-- **No eval, no subprocesses**
-- Privilege boundary: an API key works for dubbing endpoints only — it **cannot** mint further API keys
+- The API key is sent as an `Authorization` header to `baseUrl` and never appears in a tool result — but tool arguments *are* written to the session log, so don't paste keys into prompts. A key reaches dubbing endpoints only; it cannot mint further keys.
+- Reads the file at `source` when it's a local path, and nothing else. Network access is limited to `baseUrl` and the presigned storage target it hands back.
 
 ## Or use MCP
 
